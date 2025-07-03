@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TestMyGK - The Ultimate Knowledge Game</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- General & Reset Styles --- */
+        :root {
+            --primary-color: #00c6ff;
+            --secondary-color: #9c27b0;
+            --correct-color: #00e676;
+            --incorrect-color: #ff3d71;
+            --dark-bg: #121019;
+            --light-bg: rgba(23, 20, 31, 0.8);
+            --text-color: #f0f0f0;
+            --text-muted: #a0a0a0;
+            --border-color: rgba(0, 198, 255, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            background: linear-gradient(135deg, #121019, #2c2541, #121019);
+            background-size: 200% 200%;
+            animation: spaceyBG 20s ease infinite;
+        }
+
+        /* --- Main Game Container --- */
+        .game-container {
+            width: 100%;
+            max-width: 700px;
+            background-color: var(--light-bg);
+            border-radius: 20px;
+            box-shadow: 0 0 25px rgba(0, 198, 255, 0.2), 0 0 50px rgba(156, 39, 176, 0.2);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        
+        /* --- Screen States --- */
+        .screen {
+            padding: 40px;
+            animation: fadeIn 0.6s ease-in-out;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* --- Start Screen --- */
+        #start-screen {
+            text-align: center;
+        }
+
+        #start-screen h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, var(--primary-color), #fff, var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 200% auto;
+            animation: shine 5s linear infinite, float 6s ease-in-out infinite;
+        }
+        
+        #start-screen h1 span {
+            background: linear-gradient(90deg, var(--secondary-color), #f7b, var(--primary-color));
+            -webkit-background-clip: text;
+        }
+
+        #start-screen p {
+            color: var(--text-muted);
+            margin-bottom: 25px;
+            font-size: 1.2rem;
+        }
+        
+        /* Language Switcher */
+        .language-switcher {
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .lang-btn {
+            background-color: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        .lang-btn:hover {
+            color: #fff;
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .lang-btn.active {
+            color: #fff;
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px rgba(0, 198, 255, 0.5);
+        }
+
+
+        .difficulty-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        /* --- General Button Styles --- */
+        .btn {
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            text-align: left;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            background-image: linear-gradient(45deg, var(--primary-color) 0%, #0072ff 100%);
+        }
+        
+        .btn:hover:not(:disabled) {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(0, 198, 255, 0.3);
+        }
+        
+        .btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+            filter: grayscale(50%);
+        }
+        
+        .btn.btn-difficulty {
+            text-align: center;
+        }
+
+        /* --- Quiz Screen --- */
+        #quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        #score {
+            color: var(--primary-color);
+        }
+
+        #progress-bar-container {
+            width: 100%;
+            height: 12px;
+            background-color: var(--dark-bg);
+            border-radius: 6px;
+            margin-bottom: 25px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background-image: linear-gradient(45deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            transition: width 0.4s ease-in-out;
+            border-radius: 6px;
+        }
+
+        #question-text {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+        }
+        
+        #answer-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .answer-btn {
+            opacity: 0;
+            transform: translateX(-30px);
+            animation: button-fade-in 0.5s ease-out forwards;
+        }
+        .answer-btn:nth-child(1) { animation-delay: 0.1s; }
+        .answer-btn:nth-child(2) { animation-delay: 0.2s; }
+        .answer-btn:nth-child(3) { animation-delay: 0.3s; }
+        .answer-btn:nth-child(4) { animation-delay: 0.4s; }
+
+        .answer-btn.correct {
+            background-image: linear-gradient(45deg, var(--correct-color) 0%, #00bfa5 100%);
+            animation: pulse 0.5s ease;
+        }
+        
+        .answer-btn.incorrect {
+            background-image: linear-gradient(45deg, var(--incorrect-color) 0%, #d50000 100%);
+            animation: shake 0.5s ease;
+        }
+
+        #controls {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+        
+        #next-btn {
+            width: auto;
+            padding: 10px 30px;
+        }
+
+        /* --- End Screen --- */
+        #end-screen {
+            text-align: center;
+        }
+
+        #end-screen h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 15px rgba(255,255,255,0.2);
+        }
+        
+        #final-score {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, var(--primary-color), var(--correct-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: score-shine 3s linear infinite;
+            background-size: 200% auto;
+        }
+
+        #play-again-btn {
+            width: auto;
+            padding: 15px 40px;
+            margin-top: 20px;
+        }
+
+        /* --- Animations --- */
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-6px); } 20%, 40%, 60%, 80% { transform: translateX(6px); } }
+        @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.5); } 70% { transform: scale(1.02); box-shadow: 0 0 10px 15px rgba(0, 230, 118, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 230, 118, 0); } }
+        @keyframes spaceyBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes shine { to { background-position: -200% center; } }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+        @keyframes button-fade-in { to { opacity: 1; transform: translateX(0); } }
+        @keyframes score-shine { to { background-position: 200% center; } }
+        
+        /* Responsive */
+        @media (max-width: 600px) { .screen { padding: 25px; } #start-screen h1 { font-size: 2.2rem; } #question-text { font-size: 1.2rem; } #final-score { font-size: 3.5rem; } }
+
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen">
+            <h1 data-translate-key="main_title">Test Your <span>GK</span></h1>
+            <p data-translate-key="main_subtitle">Select a difficulty level to begin!</p>
+            <div class="language-switcher">
+                <button id="lang-en" class="lang-btn">English</button>
+                <button id="lang-hi" class="lang-btn">हिन्दी</button>
+            </div>
+            <div class="difficulty-buttons">
+                <button class="btn btn-difficulty" onclick="startGame('easy')" data-translate-key="easy">Easy</button>
+                <button class="btn btn-difficulty" onclick="startGame('medium')" data-translate-key="medium">Medium</button>
+                <button class="btn btn-difficulty" onclick="startGame('hard')" data-translate-key="hard">Hard</button>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="screen hidden">
+            <div id="quiz-header">
+                <span id="question-counter"></span>
+                <span id="score"></span>
+            </div>
+            <div id="progress-bar-container">
+                <div id="progress-bar"></div>
+            </div>
+            <h2 id="question-text">Question goes here</h2>
+            <div id="answer-buttons">
+                <!-- Answer buttons will be generated by JS -->
+            </div>
+            <div id="controls">
+                <button id="next-btn" class="btn hidden" data-translate-key="next_btn">Next</button>
+            </div>
+        </div>
+
+        <!-- End Screen -->
+        <div id="end-screen" class="screen hidden">
+            <h2 data-translate-key="end_title">Quiz Completed!</h2>
+            <p data-translate-key="end_subtitle">Your final score is:</p>
+            <div id="final-score">0 / 0</div>
+            <button id="play-again-btn" class="btn btn-difficulty" data-translate-key="play_again_btn">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // --- 0. TRANSLATION DATA ---
+        const translations = {
+            en: {
+                main_title: "Test Your <span>GK</span>",
+                main_subtitle: "Select a difficulty level to begin!",
+                easy: "Easy",
+                medium: "Medium",
+                hard: "Hard",
+                score_label: "Score",
+                question_label: "Question",
+                next_btn: "Next",
+                end_title: "Quiz Completed!",
+                end_subtitle: "Your final score is:",
+                play_again_btn: "Play Again"
+            },
+            hi: {
+                main_title: "अपना <span>जीके</span> जांचें",
+                main_subtitle: "शुरू करने के लिए एक कठिनाई स्तर चुनें!",
+                easy: "आसान",
+                medium: "मध्यम",
+                hard: "कठिन",
+                score_label: "स्कोर",
+                question_label: "प्रश्न",
+                next_btn: "अगला",
+                end_title: "प्रश्नोत्तरी पूरी हुई!",
+                end_subtitle: "आपका अंतिम स्कोर है:",
+                play_again_btn: "फिर से खेलें"
+            }
+        };
+
+        // --- 1. DATA: Questions for the quiz ---
+        const quizData = [
+            // Easy
+            { level: 'easy', question: { en: "What is the capital of France?", hi: "फ्रांस की राजधानी क्या है?" }, answers: [{ text: { en: "Berlin", hi: "बर्लिन" }, correct: false }, { text: { en: "Madrid", hi: "मैड्रिड" }, correct: false }, { text: { en: "Paris", hi: "पेरिस" }, correct: true }, { text: { en: "Rome", hi: "रोम" }, correct: false }] },
+            { level: 'easy', question: { en: "Which planet is known as the Red Planet?", hi: "किस ग्रह को लाल ग्रह के नाम से जाना जाता है?" }, answers: [{ text: { en: "Earth", hi: "पृथ्वी" }, correct: false }, { text: { en: "Mars", hi: "मंगल" }, correct: true }, { text: { en: "Jupiter", hi: "बृहस्पति" }, correct: false }, { text: { en: "Venus", hi: "शुक्र" }, correct: false }] },
+            { level: 'easy', question: { en: "What is the largest mammal in the world?", hi: "दुनिया का सबसे बड़ा स्तनपायी कौन सा है?" }, answers: [{ text: { en: "Elephant", hi: "हाथी" }, correct: false }, { text: { en: "Giraffe", hi: "जिराफ़" }, correct: false }, { text: { en: "Blue Whale", hi: "ब्लू व्हेल" }, correct: true }, { text: { en: "Great White Shark", hi: "ग्रेट व्हाइट शार्क" }, correct: false }] },
+            { level: 'easy', question: { en: "Who wrote 'Romeo and Juliet'?", hi: "'रोमियो और जूलियट' किसने लिखा था?" }, answers: [{ text: { en: "Charles Dickens", hi: "चार्ल्स डिकेंस" }, correct: false }, { text: { en: "William Shakespeare", hi: "विलियम शेक्सपियर" }, correct: true }, { text: { en: "Jane Austen", hi: "जेन ऑस्टेन" }, correct: false }, { text: { en: "Mark Twain", hi: "मार्क ट्वेन" }, correct: false }] },
+            { level: 'easy', question: { en: "How many continents are there?", hi: "कितने महाद्वीप हैं?" }, answers: [{ text: { en: "5", hi: "5" }, correct: false }, { text: { en: "6", hi: "6" }, correct: false }, { text: { en: "7", hi: "7" }, correct: true }, { text: { en: "8", hi: "8" }, correct: false }] },
+            
+            // Medium
+            { level: 'medium', question: { en: "In which year did the Titanic sink?", hi: "टाइटैनिक किस वर्ष में डूबा था?" }, answers: [{ text: { en: "1905", hi: "1905" }, correct: false }, { text: { en: "1912", hi: "1912" }, correct: true }, { text: { en: "1918", hi: "1918" }, correct: false }, { text: { en: "1923", hi: "1923" }, correct: false }] },
+            { level: 'medium', question: { en: "What is the chemical symbol for gold?", hi: "सोने का रासायनिक प्रतीक क्या है?" }, answers: [{ text: { en: "Ag", hi: "Ag" }, correct: false }, { text: { en: "Go", hi: "Go" }, correct: false }, { text: { en: "Ge", hi: "Ge" }, correct: false }, { text: { en: "Au", hi: "Au" }, correct: true }] },
+            { level: 'medium', question: { en: "Who was the first person to walk on the moon?", hi: "चाँद पर चलने वाला पहला व्यक्ति कौन था?" }, answers: [{ text: { en: "Buzz Aldrin", hi: "बज़ एल्ड्रिन" }, correct: false }, { text: { en: "Yuri Gagarin", hi: "यूरी गगारिन" }, correct: false }, { text: { en: "Neil Armstrong", hi: "नील आर्मस्ट्रांग" }, correct: true }, { text: { en: "Michael Collins", hi: "माइकल कोलिन्स" }, correct: false }] },
+            { level: 'medium', question: { en: "What is the smallest country in the world?", hi: "दुनिया का सबसे छोटा देश कौन सा है?" }, answers: [{ text: { en: "Monaco", hi: "मोनाको" }, correct: false }, { text: { en: "Vatican City", hi: "वेटिकन सिटी" }, correct: true }, { text: { en: "San Marino", hi: "सैन मैरिनो" }, correct: false }, { text: { en: "Lichtenstein", hi: "लिकटेंस्टीन" }, correct: false }] },
+            { level: 'medium', question: { en: "Which artist painted the Mona Lisa?", hi: "मोना लिसा को किस कलाकार ने चित्रित किया था?" }, answers: [{ text: { en: "Vincent van Gogh", hi: "विन्सेंट वैन गो" }, correct: false }, { text: { en: "Pablo Picasso", hi: "पाब्लो पिकासो" }, correct: false }, { text: { en: "Leonardo da Vinci", hi: "लियोनार्डो दा विंची" }, correct: true }, { text: { en: "Michelangelo", hi: "माइकल एंजेलो" }, correct: false }] },
+
+            // Hard
+            { level: 'hard', question: { en: "What is the speed of light in a vacuum?", hi: "निर्वात में प्रकाश की गति क्या है?" }, answers: [{ text: { en: "300,000 km/s", hi: "300,000 किमी/सेकंड" }, correct: true }, { text: { en: "150,000 km/s", hi: "150,000 किमी/सेकंड" }, correct: false }, { text: { en: "500,000 km/s", hi: "500,000 किमी/सेकंड" }, correct: false }, { text: { en: "1,000,000 km/s", hi: "1,000,000 किमी/सेकंड" }, correct: false }] },
+            { level: 'hard', question: { en: "Who is credited with discovering penicillin?", hi: "पेनिसिलिन की खोज का श्रेय किसे दिया जाता है?" }, answers: [{ text: { en: "Marie Curie", hi: "मैरी क्यूरी" }, correct: false }, { text: { en: "Louis Pasteur", hi: "लुई पाश्चर" }, correct: false }, { text: { en: "Alexander Fleming", hi: "अलेक्जेंडर फ्लेमिंग" }, correct: true }, { text: { en: "Robert Koch", hi: "रॉबर्ट कोच" }, correct: false }] },
+            { level: 'hard', question: { en: "Which element has the highest melting point?", hi: "किस तत्व का गलनांक सबसे अधिक होता है?" }, answers: [{ text: { en: "Iron", hi: "लोहा" }, correct: false }, { text: { en: "Osmium", hi: "ओस्मियम" }, correct: false }, { text: { en: "Titanium", hi: "टाइटेनियम" }, correct: false }, { text: { en: "Tungsten", hi: "टंगस्टन" }, correct: true }] },
+            { level: 'hard', question: { en: "The 'Haber process' is used to produce which chemical?", hi: "'हैबर प्रक्रिया' का उपयोग किस रसायन का उत्पादन करने के लिए किया जाता है?" }, answers: [{ text: { en: "Sulfuric Acid", hi: "सल्फ्यूरिक एसिड" }, correct: false }, { text: { en: "Ammonia", hi: "अमोनिया" }, correct: true }, { text: { en: "Chlorine", hi: "क्लोरीन" }, correct: false }, { text: { en: "Ethanol", hi: "इथेनॉल" }, correct: false }] },
+            { level: 'hard', question: { en: "What was the name of the supercontinent that existed millions of years ago?", hi: "लाखों साल पहले मौजूद सुपरकॉन्टिनेंट का नाम क्या था?" }, answers: [{ text: { en: "Gondwana", hi: "गोंडवाना" }, correct: false }, { text: { en: "Laurasia", hi: "लौरेशिया" }, correct: false }, { text: { en: "Pangaea", hi: "पैंजिया" }, correct: true }, { text: { en: "Rodinia", hi: "रोडिनिया" }, correct: false }] }
+        ];
+
+        // --- 2. DOM Element References ---
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const endScreen = document.getElementById('end-screen');
+
+        const questionText = document.getElementById('question-text');
+        const answerButtons = document.getElementById('answer-buttons');
+        const nextButton = document.getElementById('next-btn');
+        const playAgainButton = document.getElementById('play-again-btn');
+        
+        const questionCounterEl = document.getElementById('question-counter');
+        const scoreEl = document.getElementById('score');
+        const finalScoreEl = document.getElementById('final-score');
+        const progressBar = document.getElementById('progress-bar');
+
+        const langEnBtn = document.getElementById('lang-en');
+        const langHiBtn = document.getElementById('lang-hi');
+        
+        // --- 3. Game State Variables ---
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let currentLanguage = 'en';
+
+        // --- 4. Event Listeners ---
+        langEnBtn.addEventListener('click', () => switchLanguage('en'));
+        langHiBtn.addEventListener('click', () => switchLanguage('hi'));
+
+        nextButton.addEventListener('click', () => {
+            currentQuestionIndex++;
+            setNextQuestion();
+        });
+        
+        playAgainButton.addEventListener('click', () => {
+            endScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        });
+
+        // --- 5. Core Game Functions ---
+        function switchLanguage(lang) {
+            currentLanguage = lang;
+            langEnBtn.classList.toggle('active', lang === 'en');
+            langHiBtn.classList.toggle('active', lang === 'hi');
+
+            document.querySelectorAll('[data-translate-key]').forEach(el => {
+                const key = el.dataset.translateKey;
+                if (translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+        }
+        
+        function startGame(difficulty) {
+            startScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            
+            // Filter questions by difficulty and shuffle them
+            currentQuestions = quizData.filter(q => q.level === difficulty).sort(() => Math.random() - 0.5);
+            currentQuestionIndex = 0;
+            score = 0;
+            
+            setNextQuestion();
+        }
+
+        function setNextQuestion() {
+            resetState();
+            if (currentQuestionIndex < currentQuestions.length) {
+                showQuestion(currentQuestions[currentQuestionIndex]);
+                updateProgress();
+            } else {
+                showFinalScore();
+            }
+        }
+
+        function showQuestion(question) {
+            questionText.innerText = question.question[currentLanguage];
+            question.answers.forEach(answer => {
+                const button = document.createElement('button');
+                button.innerText = answer.text[currentLanguage];
+                button.classList.add('btn', 'answer-btn');
+                if (answer.correct) {
+                    button.dataset.correct = true;
+                }
+                button.addEventListener('click', selectAnswer);
+                answerButtons.appendChild(button);
+            });
+            updateScoreDisplay();
+        }
+
+        function selectAnswer(e) {
+            const selectedButton = e.target;
+            const isCorrect = selectedButton.dataset.correct === 'true';
+
+            if (isCorrect) {
+                score++;
+                selectedButton.classList.add('correct');
+            } else {
+                selectedButton.classList.add('incorrect');
+            }
+            
+            Array.from(answerButtons.children).forEach(button => {
+                if (button.dataset.correct === 'true') {
+                    if(!isCorrect) button.classList.add('correct');
+                }
+                button.disabled = true;
+            });
+
+            updateScoreDisplay();
+            setTimeout(() => {
+                nextButton.classList.remove('hidden');
+            }, 500);
+        }
+        
+        function showFinalScore() {
+            quizScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            
+            const total = currentQuestions.length;
+            if (score === 0) {
+                finalScoreEl.innerText = `0 / ${total}`;
+                return;
+            }
+
+            let counter = 0;
+            finalScoreEl.innerText = `0 / ${total}`;
+            const interval = setInterval(() => {
+                counter++;
+                finalScoreEl.innerText = `${counter} / ${total}`;
+                if (counter >= score) {
+                    clearInterval(interval);
+                }
+            }, 80);
+        }
+
+        // --- 6. Helper & UI Functions ---
+        function resetState() {
+            nextButton.classList.add('hidden');
+            while (answerButtons.firstChild) {
+                answerButtons.removeChild(answerButtons.firstChild);
+            }
+        }
+        
+        function updateScoreDisplay() {
+            scoreEl.innerText = `${translations[currentLanguage].score_label}: ${score}`;
+        }
+        
+        function updateProgress() {
+            const progressPercent = ((currentQuestionIndex + 1) / currentQuestions.length) * 100;
+            progressBar.style.width = `${progressPercent}%`;
+            questionCounterEl.innerText = `${translations[currentLanguage].question_label} ${currentQuestionIndex + 1} / ${currentQuestions.length}`;
+        }
+
+        // --- Initial Load ---
+        switchLanguage('en'); // Set default language on page load
+    </script>
+
+</body>
+</html>
